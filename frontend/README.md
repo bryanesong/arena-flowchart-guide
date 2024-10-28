@@ -1,4 +1,5 @@
 # React Frontend For Arena App
+UI for a mainly server side web app
 
 ## Available Scripts
 
