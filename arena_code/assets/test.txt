@@ -1,0 +1,9 @@
+How to pair the best augments together:
+    - We want to pair augments which share the same type of way they stack stats.
+    - Example:
+        - stacking speed
+        - stacking sttack speed
+        - stacking health
+        - stacking healing
+        - stacking DOT 
+    -The end result should be to try to get the largest value of any ONE stat possible
