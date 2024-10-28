@@ -1,4 +1,4 @@
-##### React Frontend For Arena App
+#React Frontend For Arena App
 
 ## Available Scripts
 
