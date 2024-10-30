@@ -76,14 +76,17 @@ with open('C:/Users/bryan/OneDrive/Documents/test123/arena_test_py/arena_code/as
         basic_info['name'] = name
         basic_info['tier'] = tier
         basic_info['desc'] = desc
+        basic_info['data_values'] = data_values
         basic_info['tool_tip'] = tool_tip
+        basic_info['calculations'] = calculations
+
 
         #name is the unique id for each augment
         data_values['name'] = name
         calculations['name'] = name
 
         #insertion here
-        mongodb_augment_insert(basic_info)
+        mongoDBInsert(basic_info,"augment_basic_info")
         #mongoDBInsert(basic_info,"augment_basic_info")
         #mongoDBInsert(data_values,"augment_data_values")
         #mongoDBInsert(calculations,"augment_calculations")

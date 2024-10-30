@@ -1,3 +1,5 @@
+import { cloneElement, useState, componentDidUpdate } from "react";
+
 const test_data_augments = [
     {
         id: "123",
@@ -16,24 +18,39 @@ const test_data_augments = [
     }
 ]
 
-const Augment = ({ id, name, stats }) =>
+const Augment = ({ id, name, desc }) =>
     <div>
         <li key={id}>
             <h2>{name}</h2>
-            <p>{stats}</p>
+            <p>{desc}</p>
         </li>
         <br />
     </div>
 
+function getComponents({ listOfAugments }) {
+    console.log('augment Has map checker!')
+    const comps = [];
+    listOfAugments.forEach((augment_values,augment_id) => comps.push({
+        id: augment_id, 
+        name: augment_values.name,
+        desc: augment_values.desc, 
+    }));
+    return comps;
+}
 
 
-export default function AugmentList() {
+
+export default function AugmentList({ listOfAugments }) {
+    console.log('Current Build Component, incoming augment:', listOfAugments)
+    const displayArr = getComponents({listOfAugments})
+    console.log("Display Array:",displayArr)
     return (
         <div className="border-2 w-max">
-            <ul>
-                {test_data_augments.map(Augment)}
-            </ul>
-
+            <ol>
+                <li>
+                    {displayArr.map(Augment)}
+                </li>
+            </ol>
         </div>
     )
 }

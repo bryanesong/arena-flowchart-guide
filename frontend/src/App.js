@@ -7,7 +7,7 @@ import './App.css';
 function App() {
   return (
     <main className="h-screen">
-      <div className="grid grid-cols-3 gap-2">
+      <div className="h-full grid grid-cols-3 gap-2">
         <div className="h-20 col-span-3 bg-green-600">
           <p className="font-black text-5xl content-center ">
             Arena Flowchart Guide
@@ -32,8 +32,10 @@ function App() {
         <div className="h-full font-bold bg-pink-500">
           Best Possible Options (Click what you chose)
         </div>
-        <MainDataDisplay/>
-
+        <div className='h-full col-span-3'>
+          <MainDataDisplay/>
+        </div>
+        
       </div>
     </main>
   );
