@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Body, HTTPException, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from models import FlowchartInstanceModel, AugmentModel
+from models import FlowchartInstanceModel, AugmentModel, RequestAugmentValues
 
 
 router = APIRouter()
@@ -43,6 +43,38 @@ async def get_flowcharts(request: Request):
     for doc in await request.app.mongodb["flowcharts"].find().to_list(length=100):
         flowcharts.append(doc)
     return flowcharts
+
+
+@router.get("/augments/match/{tier}",response_description="Get all active Flowchart instances that have the best matches based on given input.")
+async def get_augment_based_on_value_match_and_tier(request: Request,tier: int, incoming_values: RequestAugmentValues= Body(...)):
+    #minimum requirement is a tier, to go off of
+    values = jsonable_encoder(incoming_values)
+    print('incoming values:',values)
+
+    augments = []
+    for doc in await request.app.mongodb["augment_basic_info"].find(filter={'tier':tier}).to_list(length=100):
+        augments.append(doc)
+    if len(augments) == 0:
+        raise HTTPException(status_code=404,detail=f"ERROR: No augments in DB.")
+
+    
+    #find all augments that have a shared values
+    res = []
+    for augment in augments:
+        #print('array1',values['values'])
+        #print('array2',augment['data_values'].keys())
+        combined = set()
+
+        for value in values['values']:
+            if value in augment['data_values'].keys():
+                combined.add(value)
+        
+        if len(combined) !=0:
+            print('name',augment['name'])
+            print('shared values:',combined)
+
+    return augments
+
 
 @router.get("/augments",response_description="Get all possible augments.")
 async def get_augments(request: Request):

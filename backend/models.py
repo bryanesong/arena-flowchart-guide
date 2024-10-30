@@ -5,10 +5,10 @@ from pydantic import BaseModel, Field
 class AugmentModel(BaseModel):
     id: str = Field(default_factory=uuid.uuid4, alias="_id")
     name: str
-    tier: int
     desc: str
-    tooltip: str
 
+class RequestAugmentValues(BaseModel):
+    values: list = []
 
 class FlowchartInstanceModel(BaseModel):
     id: str = Field(default_factory=uuid.uuid4,alias="_id")
@@ -24,7 +24,8 @@ class FlowchartInstanceModel(BaseModel):
                 "name": "aatrox_123",
                 "progress" : {"item1": 1, "item2" : 2}
             }
-        }
+}
+
 
 
 

@@ -20,8 +20,7 @@ const test_data_augments = [
 ];
 
 
-export default function ListOfOptions({round,sendDataToParentAugmentId}) {
-    const [, updateState] = useState();
+export default function ListOfOptions({round,sendDataToParentAugment, listOfCurrentAugments}) {
     const [augment_data, setAugmentData] = useState();
 
     /*
@@ -67,14 +66,14 @@ export default function ListOfOptions({round,sendDataToParentAugmentId}) {
 
     function handleDataFromChild(data){
         console.log('subchild test:',data)
-        sendDataToParentAugmentId(data)
+        sendDataToParentAugment(data)
     }
 
     return (
         <div>
             <div>
                 <ol>
-                    <AugmentList data={augment_data} sendDataToParentAugmentId={handleDataFromChild} />
+                    <AugmentList data={augment_data} sendDataToParentAugment={handleDataFromChild} />
                 </ol>
             </div>
 
@@ -83,7 +82,7 @@ export default function ListOfOptions({round,sendDataToParentAugmentId}) {
 }
 
 
-function AugmentList({ data = [0], sendDataToParentAugmentId }) {
+function AugmentList({ data = [0], sendDataToParentAugment}) {
     const [query, setQuery] = useState("");
     const [augment_data, setAugmentData] = useState([]);
     
@@ -102,9 +101,9 @@ function AugmentList({ data = [0], sendDataToParentAugmentId }) {
       }, [query, data[0]]); // this will rerun when either query or allitems is changes
     
 
-    function handleAugmentButtonClick(augment_id) {
-        console.log("This augment was selected:", augment_id);
-        sendDataToParentAugmentId(augment_id);
+    function handleAugmentButtonClick(augment) {
+        console.log("This augment was selected:", augment.name);
+        sendDataToParentAugment(augment);
     }
 
     if (data[0].length > 1) {
@@ -132,7 +131,7 @@ function AugmentList({ data = [0], sendDataToParentAugmentId }) {
                                         class="relative inline-flex items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800"
                                         onChange={data = null}
                                         onClick={ ()=> 
-                                            handleAugmentButtonClick(augment._id)
+                                            handleAugmentButtonClick(augment)
                                         }
                                     >
                                         <span class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
