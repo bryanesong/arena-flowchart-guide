@@ -49,7 +49,7 @@ export function MainDataDisplay() {
                 <CurrentRoundButtons roundTypeButtonPressed={handleRoundTypeDataOnPressed} />
             </div>
             <div className="h-screen bg-pink-500 overflow-y-auto text-wrap">
-                <ListOfOptions round={dataFromChild} sendDataToParentAugment={handleAugmentChosen} listOfCurrentAugments={listOfAugments} />
+                <ListOfOptions round={dataFromChild} sendDataToParentAugment={handleAugmentChosen} listOfCurrentAugments={listOfChosenAugments} />
             </div>
             <div className=" h-full col-span-3 bg-yellow-300">
                 <button

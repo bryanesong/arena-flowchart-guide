@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter, Body, HTTPException, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
@@ -45,35 +46,81 @@ async def get_flowcharts(request: Request):
     return flowcharts
 
 
-@router.get("/augments/match/{tier}",response_description="Get all active Flowchart instances that have the best matches based on given input.")
-async def get_augment_based_on_value_match_and_tier(request: Request,tier: int, incoming_values: RequestAugmentValues= Body(...)):
+@router.post("/augments/match/{tier}",response_description="Get all active Flowchart instances that have the best matches based on given input.")
+async def get_augment_based_on_value_match_and_tier(request: Request,tier: int, incoming_augments: List[AugmentModel]):
     #minimum requirement is a tier, to go off of
-    values = jsonable_encoder(incoming_values)
-    print('incoming values:',values)
-
-    augments = []
-    for doc in await request.app.mongodb["augment_basic_info"].find(filter={'tier':tier}).to_list(length=100):
-        augments.append(doc)
+    print('body incoming_augments:',incoming_augments)
+    augments = {}
+    for doc in await request.app.mongodb["augment_basic_info"].find(filter={'tier':tier}).to_list(length=1000):
+        #augments.append(doc)
+        augments[doc['_id']] = doc
+        augments[doc['_id']]['percentage_match'] = 0.0
     if len(augments) == 0:
         raise HTTPException(status_code=404,detail=f"ERROR: No augments in DB.")
-
-    
+         
     #find all augments that have a shared values
     res = []
-    for augment in augments:
-        #print('array1',values['values'])
-        #print('array2',augment['data_values'].keys())
-        combined = set()
+    
+    resulting_augments = {}
+    resulting_percentages = {}
+    total_incoming_categories = set()
+    augment_similarity_tracker = {}
+    combined_augments = {}
 
-        for value in values['values']:
-            if value in augment['data_values'].keys():
-                combined.add(value)
+    #loop through all augments that came in via request body content
+    for incoming_augment in incoming_augments:
+        incoming_categories = incoming_augment.categories
+        print("incoming_name:",incoming_augment.name)
+        print("incoming_categories:",incoming_augment.categories)
+
+        #loop through all augments in db in tier
+        shared_categories_counter = set()
+        for augmentid,augment in augments.items():
+            print('comparing with:',augment['name'])
+            if augment['name'] == incoming_augment.name:
+                print('SKP: self comparison')
+                #no need to compare against itself
+                continue
+            if augment['_id'] not in augment_similarity_tracker:
+                augment_similarity_tracker[augment['_id']] = []
+            for incoming_category in incoming_categories:
+                total_incoming_categories.add(incoming_category)
+                if incoming_category in augment['categories']:
+                    augment_similarity_tracker[augment['_id']].append(incoming_category)
+                    shared_categories_counter.add(incoming_category)
         
-        if len(combined) !=0:
-            print('name',augment['name'])
-            print('shared values:',combined)
+        resulting_augments[incoming_augment.id] = incoming_augment
+                
+        print("------------")
 
-    return augments
+    
+ 
+    #calculate augment percentage compatibility
+    for augmentid,categories in augment_similarity_tracker.items():
+        percentage = (len(categories) / len(total_incoming_categories)) * 100
+        if percentage> 0:
+            augments[augmentid]['percentage_match'] = percentage
+
+
+    if len(combined_augments) !=0:
+        print('all augments looking for:',total_incoming_categories)
+        print('augment_percentage counter:',len(resulting_percentages))
+        print('augment with at least 1 shared category counter:',len(combined_augments))
+    else:
+        print("NO SHARED AUGMENT CATEGORIES")
+    
+    if len(incoming_augments) == 0:
+        return {
+            "cur_augment_pool": [], #[shared categories between incoming augments]
+            "augments":augments #augment_id : augment_info
+        }
+    
+    response ={
+        "cur_augment_pool": total_incoming_categories, #[shared categories between incoming augments]
+        "augments":augments #augment_id : augment_info
+
+    }
+    return response
 
 
 @router.get("/augments",response_description="Get all possible augments.")

@@ -20,8 +20,8 @@ const test_data_augments = [
 ];
 
 
-export default function ListOfOptions({round,sendDataToParentAugment, listOfCurrentAugments}) {
-    const [augment_data, setAugmentData] = useState();
+export default function ListOfOptions({ round, sendDataToParentAugment, listOfCurrentAugments }) {
+    const [augment_data, setAugmentData] = useState([]);
 
     /*
     const listOfAugments = test_data_augments.map(augment =>
@@ -38,20 +38,44 @@ export default function ListOfOptions({round,sendDataToParentAugment, listOfCurr
     useEffect(() => {
         const fetchAugments = async () => {
             try {
-                console.log('Fetching API via GET Request.')
-                const response = await fetch('http://localhost:8000/augments/tier/' + round)
-                console.log('RESPONSE:', response)
-                const data = await response.json()
-                //only put the results in state
-                if (data['detail']) {
-                    setAugmentData([{
-                        name: 'No augments chosen yet.'
-                    }])
-                } else {
-                    setAugmentData([data])
+                console.log('Fetching API via POST Request.')
+                const myHeaders = new Headers();
+                myHeaders.append("Content-Type", "application/json");
+                console.log('list of current augments:',listOfCurrentAugments)
+                var raw = JSON.stringify(listOfCurrentAugments);
+                console.log('listOfCurrentAugments after JSONify',raw)
+                if (listOfCurrentAugments.size == 0) {de
+                    console.log("input list in empty")
+                    raw = JSON.stringify([])
                 }
 
+                
 
+                const requestOptions = {
+                    method: "POST",
+                    headers: myHeaders,
+                    body: raw,
+                    redirect: "follow"
+                };
+                //console.log('Round:',round)
+                const response = await fetch("http://localhost:8000/augments/match/" + round, requestOptions);
+
+
+                if (!response.ok) {
+                    setAugmentData([])
+                } else {
+                    //console.log('RESPONSE:', response)
+                    const data = await response.json()
+
+                    console.log('post request:', data)
+
+                    let response_map = new Map(Object.entries(data['augments']));
+                    //console.log('response augment data:',response_map)
+                    let values_augments = Array.from(response_map.values());
+                    //console.log('ARRAY of augments',values_augments)
+
+                    setAugmentData(values_augments)
+                }
 
             } catch (e) {
                 console.log("ERROR:", e)
@@ -64,8 +88,8 @@ export default function ListOfOptions({round,sendDataToParentAugment, listOfCurr
 
     const [dataFromChild, setDataFromChild] = useState("");
 
-    function handleDataFromChild(data){
-        console.log('subchild test:',data)
+    function handleDataFromChild(data) {
+        console.log('subchild test:', data)
         sendDataToParentAugment(data)
     }
 
@@ -82,31 +106,31 @@ export default function ListOfOptions({round,sendDataToParentAugment, listOfCurr
 }
 
 
-function AugmentList({ data = [0], sendDataToParentAugment}) {
+function AugmentList({ data, sendDataToParentAugment }) {
     const [query, setQuery] = useState("");
     const [augment_data, setAugmentData] = useState([]);
-    
-    //console.log('incoming augment data:', data)
 
     const filteredItems = useMemo(() => {
-        if (data == null || data == undefined){
-            return [];
+        console.log('current data position:', data)
+        if (data == null || data == undefined) {
+            return null;
         }
-        setAugmentData(data[0])
-        //console.log('TYPE',typeof(data[0]),'data:',data[0])
-        if (query === "") return data[0];
-        return data[0].filter(
-          (item) => item.name.toLowerCase().search(query.toLowerCase()) !== -1
+        setAugmentData(data)
+        if (query === "") return data;
+        return data.filter(
+            (item) => item.name.toLowerCase().search(query.toLowerCase()) !== -1
         ); // toLowerCase() to not care about case sensitivity
-      }, [query, data[0]]); // this will rerun when either query or allitems is changes
-    
+    }, [query, data]); // this will rerun when either query or allitems is changes
+
 
     function handleAugmentButtonClick(augment) {
         console.log("This augment was selected:", augment.name);
         sendDataToParentAugment(augment);
     }
-
-    if (data[0].length > 1) {
+    if (augment_data == undefined) {
+        return <div>Waiting to next round to be selected.</div>
+    }
+    if (augment_data.length > 1) {
         return (
             <div>
                 <div className="mb-3 xl:w-96">
@@ -129,13 +153,14 @@ function AugmentList({ data = [0], sendDataToParentAugment}) {
                                 <h1>
                                     <button
                                         class="relative inline-flex items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800"
-                                        onChange={data = null}
-                                        onClick={ ()=> 
+                                        onChange={data = null} //empty list and force user to pick next round
+                                        onClick={() => {
                                             handleAugmentButtonClick(augment)
-                                        }
+                                            data = null
+                                        }}
                                     >
                                         <span class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
-                                            {augment.name}
+                                            {augment['name']}
                                         </span>
                                     </button></h1>
                                 <h2>{augment.desc}</h2>

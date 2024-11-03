@@ -4,8 +4,15 @@ from pydantic import BaseModel, Field
 
 class AugmentModel(BaseModel):
     id: str = Field(default_factory=uuid.uuid4, alias="_id")
-    name: str
-    desc: str
+    name: str = ''
+    desc: str = ''
+    tier: int = ''
+    data_values: dict = {}
+    tool_tip: str = ''
+    calculations: dict = {}
+    categories: list = []
+    percentage_match: Optional[float] = Field(None)
+
 
 class RequestAugmentValues(BaseModel):
     values: list = []
